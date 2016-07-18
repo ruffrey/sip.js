@@ -4,8 +4,8 @@
 
 sip = require 'sip'
 digest = require 'sip/digest'
-randomBytes = (require 'rbytes').randomBytes
-rbytes = (n) -> randomBytes(n).toHex()
+randomBytes = (require 'randomHexBytes').randomBytes
+randomHexBytes = (n) -> randomBytes(n).toHex()
 util = require 'util'
 
 dialogs = {}
@@ -32,13 +32,13 @@ sip.start {
               sip.send digest.challenge regcontext, sip.makeResponse rq, 401, 'Authorization Required'
             else
               rs = sip.makeResponse rq, 200
-              rs.headers.to.tag = rbytes 16
+              rs.headers.to.tag = randomHexBytes 16
               sip.send digest.signResponse regcontext, rs
           when 'INVITE'
             if !digest.authenticateRequest context, rq, {user: '100', password: '1234'}
               sip.send digest.challenge context, sip.makeResponse rq, 401, 'Authorization Required'
             else
-              tag = rbytes 16
+              tag = randomHexBytes 16
               dialogs[makeDialogId rq, tag] = (rq) ->
                 try
                   if digest.authenticateRequest context, rq

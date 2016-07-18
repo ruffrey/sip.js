@@ -1,126 +1,160 @@
-var util = require('util');
-
-var parsers = {
-  o: function(o) {
-    var t = o.split(/\s+/);
+const parsers = {
+  o(o) {
+    const t = o.split(/\s+/);
     return {
       username: t[0],
-      id : t[1],
-      version : t[2],
-      nettype : t[3],
-      addrtype : t[4],
-      address : t[5]
+      id: t[1],
+      version: t[2],
+      nettype: t[3],
+      addrtype: t[4],
+      address: t[5]
     };
   },
-  c: function(c) {
-    var t = c.split(/\s+/);
-    return { nettype: t[0], addrtype: t[1], address: t[2] };
+  c(c) {
+    const t = c.split(/\s+/);
+    return {
+      nettype: t[0],
+      addrtype: t[1],
+      address: t[2]
+    };
   },
-  m: function(m) {
-    var t = /^(\w+) +(\d+)(?:\/(\d))? +(\S+) (\d+( +\d+)*)/.exec(m);
+  m(m) {
+    const t = /^(\w+) +(\d+)(?:\/(\d))? +(\S+) (\d+( +\d+)*)/.exec(m);
 
     return {
       media: t[1],
       port: +t[2],
       portnum: +(t[3] || 1),
       proto: t[4],
-      fmt: t[5].split(/\s+/).map(function(x) { return +x; })
+      fmt: t[5].split(/\s+/).map((x) => +x)
     };
   },
-  a: function(a) {
+  a(a) {
     return a;
   }
 };
 
-exports.parse = function(sdp) {
-  var sdp = sdp.split(/\r\n/);
-  
-  var root = {};
-  var m;
+/**
+ * Turn an sdp string into an object.
+ * @param {String} sdp
+ * @returns {Object}
+ */
+exports.parse = function parseSdpStringToObject(sdp) {
+  const sdpLines = sdp.split(/\r\n/);
+
+  const root = {};
+  let m;
   root.m = [];
 
-  for(var i = 0; i < sdp.length; ++i) {
-    var tmp = /^(\w)=(.*)/.exec(sdp[i]);
-    
-    if(tmp) {
+  for (let i = 0; i < sdpLines.length; ++i) {
+    const tmp = /^(\w)=(.*)/.exec(sdpLines[i]);
 
-    var c = (parsers[tmp[1]] || function(x) { return x;})(tmp[2]);
-    switch(tmp[1]) {
-    case 'm':
-      if(m) root.m.push(m);
-      m = c;
-      break;
-    case 'a':
-      var o = (m || root);
-      if(o.a === undefined) o.a = [];
-      o.a.push(c);
-      break;
-    default:
-      (m || root)[tmp[1]] = c;
-      break;
-    }
+    if (tmp) {
+
+      const c = (parsers[tmp[1]] || function (x) {
+        return x;
+      })(tmp[2]);
+      switch (tmp[1]) {
+        case 'm':
+          if (m) root.m.push(m);
+          m = c;
+          break;
+        case 'a':
+          const o = (m || root);
+          if (o.a === undefined) o.a = [];
+          o.a.push(c);
+          break;
+        default:
+          (m || root)[tmp[1]] = c;
+          break;
+      }
     }
   }
 
-  if(m) root.m.push(m);
-  
+  if (m) root.m.push(m);
+
   return root;
 };
 
-var stringifiers = {
-  o: function(o) {
-    return [o.username || '-', o.id, o.version, o.nettype || 'IN', o.addrtype || 'IP4', o.address].join(' '); 
+const stringifiers = {
+  o(o) {
+    return [
+      o.username || '-',
+      o.id,
+      o.version,
+      o.nettype || 'IN',
+      o.addrtype || 'IP4',
+      o.address
+    ].join(' ');
   },
-  c: function(c) {
-    return [c.nettype || 'IN', c.addrtype || 'IP4', c.address].join(' ');
+  c(c) {
+    return [
+      c.nettype || 'IN',
+      c.addrtype || 'IP4',
+      c.address
+    ].join(' ');
   },
-  m: function(m) {
-    return [m.media || 'audio', m.port, m.proto || 'RTP/AVP', m.fmt.join(' ')].join(' ');
+  m(m) {
+    return [
+      m.media || 'audio',
+      m.port,
+      m.proto || 'RTP/AVP',
+      m.fmt.join(' ')
+    ].join(' ');
   }
 };
 
-function stringifyParam(sdp, type, def) {
-  if(sdp[type] !== undefined) {
-    var stringifier = function(x) { return type + '=' + ((stringifiers[type] && stringifiers[type](x)) || x) + '\r\n'; };
+function stringifySdpParam(sdp, type, def) {
+  if (sdp[type] !== undefined) {
+    const stringifier = (x) => {
+      const strX = ((stringifiers[type] && stringifiers[type](x)) || x);
+      return `${type}=${strX}\r\n`;
+    };
 
-    if(Array.isArray(sdp[type]))
+    if (Array.isArray(sdp[type])) {
       return sdp[type].map(stringifier).join('');
+    }
 
     return stringifier(sdp[type]);
   }
 
-  if(def !== undefined)
-    return type + '=' + def + '\r\n';
+  if (def !== undefined) {
+    return `${type}=${def}\r\n`;
+  }
   return '';
 }
 
-exports.stringify = function(sdp) {
-  var s = '';
-  
-  s += stringifyParam(sdp, 'v', 0);
-  s +=  stringifyParam(sdp, 'o');
-  s +=  stringifyParam(sdp, 's', '-');
-  s +=  stringifyParam(sdp, 'i');
-  s +=  stringifyParam(sdp, 'u');
-  s +=  stringifyParam(sdp, 'e');
-  s +=  stringifyParam(sdp, 'p');
-  s +=  stringifyParam(sdp, 'c');
-  s +=  stringifyParam(sdp, 'b');
-  s +=  stringifyParam(sdp, 't', '0 0');
-  s +=  stringifyParam(sdp, 'r');
-  s +=  stringifyParam(sdp, 'z');
-  s +=  stringifyParam(sdp, 'k');
-  s +=  stringifyParam(sdp, 'a');
-  sdp.m.forEach(function(m) {
-    s += stringifyParam({m:m}, 'm');
-    s +=  stringifyParam(m, 'i');
-    s +=  stringifyParam(m, 'c');
-    s +=  stringifyParam(m, 'b');
-    s +=  stringifyParam(m, 'k');
-    s +=  stringifyParam(m, 'a');
+/**
+ * Turn an sdp object into a string.
+ * @param {Object} sdp
+ * @returns {String}
+ */
+exports.stringify = function stringifySdpObject(sdp) {
+  let s = '';
+
+  s += stringifySdpParam(sdp, 'v', 0);
+  s += stringifySdpParam(sdp, 'o');
+  s += stringifySdpParam(sdp, 's', '-');
+  s += stringifySdpParam(sdp, 'i');
+  s += stringifySdpParam(sdp, 'u');
+  s += stringifySdpParam(sdp, 'e');
+  s += stringifySdpParam(sdp, 'p');
+  s += stringifySdpParam(sdp, 'c');
+  s += stringifySdpParam(sdp, 'b');
+  s += stringifySdpParam(sdp, 't', '0 0');
+  s += stringifySdpParam(sdp, 'r');
+  s += stringifySdpParam(sdp, 'z');
+  s += stringifySdpParam(sdp, 'k');
+  s += stringifySdpParam(sdp, 'a');
+
+  sdp.m.forEach((m) => {
+    s += stringifySdpParam({ m }, 'm');
+    s += stringifySdpParam(m, 'i');
+    s += stringifySdpParam(m, 'c');
+    s += stringifySdpParam(m, 'b');
+    s += stringifySdpParam(m, 'k');
+    s += stringifySdpParam(m, 'a');
   });
 
   return s;
-}
-
-
+};

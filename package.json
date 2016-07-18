@@ -1,10 +1,14 @@
 {
   "name": "sip",
-  "description": "Simple SIP implementation",
+  "description": "SIP implementation",
   "version": "0.0.2-42",
-  "homepage": "http://github.com/kirm/sip.js",
-  "author": "Kirill Mikhailov <kirill.mikhailov@gmail.com>",
-  "main": "sip",
+  "homepage": "http://github.com/ruffrey/sip.js",
+  "author": "Jeff H. Parrish <jeffhparrish@gmail.com>",
+  "main": "sip.js",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint ."
+  },
   "directories": {
     "lib": "",
     "example": "./examples",
@@ -12,15 +16,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kirm/sip.js.git"
+    "url": "https://github.com/ruffrey/sip.js.git"
   },
   "engines": {
-    "node": ">=0.2.2"
+    "node": ">=6.0.0"
   },
   "dependencies": {
     "ws": "*"
   },
   "devDependencies": {
-    "coffee-script": "~1.6.2"
+    "coffee-script": "~1.6.2",
+    "eslint": "^3.0.1",
+    "eslint-config-airbnb-base": "^4.0.0",
+    "eslint-plugin-import": "^1.10.3"
   }
 }
