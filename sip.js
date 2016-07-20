@@ -15,18 +15,20 @@ const makeResponse = require('./lib/makeResponse');
 const makeTransactionId = require('./lib/makeTransactionId');
 const messageHelpers = require('./lib/messageHelpers');
 const dnsResolver = require('./lib/dnsResolver');
+const flowTokens = require('./lib/flowTokens');
 const defaultSipPortForProtocol = dnsResolver.defaultSipPortForProtocol;
 exports.makeStreamParser = makeStreamParser;
 exports.generateBranch = generateBranch;
 exports.makeResponse = makeResponse;
 exports.parse = messageHelpers.parse;
 
-const toBase64 = stringManipulation.toBase64;
 const parsers = stringManipulation.parsers;
 const stringifyUri = stringManipulation.stringifyUri;
 const stringifyAuthHeader = stringManipulation.stringifyAuthHeader;
 const stringify = stringManipulation.stringify;
 const parseUri = stringManipulation.parseUri;
+const encodeFlowToken = flowTokens.encodeFlowToken;
+const decodeFlowToken = flowTokens.decodeFlowToken;
 
 exports.stringifyUri = stringifyUri;
 exports.stringifyAuthHeader = stringifyAuthHeader;
@@ -101,33 +103,6 @@ exports.create = function createSipServer(options, sipRequestHandler) {
   );
   const hostname = options.publicAddress || options.address || options.hostname || os.hostname();
   const seedForSha1 = crypto.randomBytes(20);
-
-  const encodeFlowToken = function encodeFlowToken(flow) {
-    const s = [flow.protocol, flow.address, flow.port, flow.local.address, flow.local.port].join();
-    const sha1hash = crypto.createHmac('sha1', seedForSha1);
-    sha1hash.update(s);
-    return toBase64([sha1hash.digest('base64'), s].join());
-  };
-
-  const decodeFlowToken = function decodeFlowToken(token) {
-    const s = Buffer.from(token, 'base64').toString('ascii').split(',');
-    if (s.length !== 6) {
-      return;
-    }
-
-    const flow = {
-      protocol: s[1],
-      address: s[2],
-      port: +s[3],
-      local: {
-        address: s[4],
-        port: +s[5]
-      }
-    };
-    const encodedFlow = encodeFlowToken(flow);
-
-    return encodedFlow === token ? flow : undefined;
-  };
 
   const sipServer = {
     /**
@@ -220,7 +195,7 @@ exports.create = function createSipServer(options, sipRequestHandler) {
     encodeFlowUri(flow) {
       return {
         schema: flow.protocol === 'TLS' ? 'sips' : 'sip',
-        user: encodeFlowToken(flow),
+        user: encodeFlowToken(flow, seedForSha1),
         host: hostname,
         params: {}
       };
