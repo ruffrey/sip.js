@@ -1,16 +1,21 @@
+const copyMessage = require('./lib/copyMessage');
 const sip = require('./sip');
 
 const contexts = {};
 
 function makeContextId(msg) {
   const via = msg.headers.via[0];
+  const branch = via.params.branch;
+  const callId = msg.headers['call-id'];
+  const seq = msg.headers.cseq.seq;
+
   return [
-    via.params.branch,
+    branch,
     via.protocol,
     via.host,
     via.port,
-    msg.headers['call-id'],
-    msg.headers.cseq.seq
+    callId,
+    seq
   ];
 }
 
@@ -50,9 +55,7 @@ function forwardRequest(ctx, rq, callback) {
   sip.send(rq, (rs, remote) => {
     if (+rs.status < 200) {
       const via = rs.headers.via[0];
-      ctx.cancellers[rs.headers.via[0].params.branch] = function () {
-        sendCancel(rq, via, route);
-      };
+      ctx.cancellers[rs.headers.via[0].params.branch] = () => sendCancel(rq, via, route);
 
       if (ctx.cancelled) {
         sendCancel(rq, via, route);
@@ -72,7 +75,7 @@ function onRequest(rq, route, remote) {
   };
 
   try {
-    route(sip.copyMessage(rq), remote);
+    route(copyMessage(rq), remote);
   } catch (e) {
     delete contexts[id];
     throw e;
@@ -117,18 +120,21 @@ const proxy = {
     const ctx = contexts[makeContextId(msg)];
 
     if (!ctx) {
-      sip.send.apply(sip, arguments);
+      sip.send.apply(sip, [msg, callback]);
       return;
     }
 
-    return msg.method
-      ? forwardRequest(ctx, msg, callback || defaultCallback)
-      : forwardResponse(ctx, msg);
+    if (msg.method) {
+      forwardRequest(ctx, msg, callback || defaultCallback);
+      return;
+    }
+
+    forwardResponse(ctx, msg);
   },
   /**
    * sip.stop
    */
-  stop: sip.stop,
+  stop: sip.stop
 
 };
 

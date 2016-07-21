@@ -1,6 +1,6 @@
 const parsers = {
-  o(o) {
-    const t = o.split(/\s+/);
+  o(lineValue) {
+    const t = lineValue.split(/\s+/);
     return {
       username: t[0],
       id: t[1],
@@ -10,16 +10,16 @@ const parsers = {
       address: t[5]
     };
   },
-  c(c) {
-    const t = c.split(/\s+/);
+  c(lineValue) {
+    const t = lineValue.split(/\s+/);
     return {
       nettype: t[0],
       addrtype: t[1],
       address: t[2]
     };
   },
-  m(m) {
-    const t = /^(\w+) +(\d+)(?:\/(\d))? +(\S+) (\d+( +\d+)*)/.exec(m);
+  m(lineValue) {
+    const t = /^(\w+) +(\d+)(?:\/(\d))? +(\S+) (\d+( +\d+)*)/.exec(lineValue);
 
     return {
       media: t[1],
@@ -47,31 +47,37 @@ exports.parse = function parseSdpStringToObject(sdp) {
   root.m = [];
 
   for (let i = 0; i < sdpLines.length; ++i) {
-    const tmp = /^(\w)=(.*)/.exec(sdpLines[i]);
+    const line = sdpLines[i];
+    const linePairs = /^(\w)=(.*)/.exec(line);
 
-    if (tmp) {
+    if (linePairs) {
+      const defaultTmpParser = (x) => x;
+      const cParser = parsers[linePairs[1]] || defaultTmpParser;
+      const c = cParser(linePairs[2]);
+      const o = m || root;
 
-      const c = (parsers[tmp[1]] || function (x) {
-        return x;
-      })(tmp[2]);
-      switch (tmp[1]) {
+      switch (linePairs[1]) {
         case 'm':
           if (m) root.m.push(m);
           m = c;
           break;
         case 'a':
-          const o = (m || root);
-          if (o.a === undefined) o.a = [];
+          if (o.a === undefined) {
+            o.a = [];
+          }
           o.a.push(c);
           break;
         default:
-          (m || root)[tmp[1]] = c;
+          (m || root)[linePairs[1]] = c;
           break;
       }
+
     }
   }
 
-  if (m) root.m.push(m);
+  if (m) {
+    root.m.push(m);
+  }
 
   return root;
 };
