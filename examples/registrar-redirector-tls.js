@@ -1,7 +1,7 @@
 // Simple registrar - redirector
 //
 
-var sip = require('sip');
+var sip = require('../sip');
 var digest = sip.digest;
 var util = require('util');
 var fs = require('fs');
@@ -15,8 +15,8 @@ sip.start({
     error: function(e) { util.debug(e.stack); }
   },
   tls: {
-    key: fs.readFileSync('pkey.pem'),
-    cert: fs.readFileSync('certificate.pem')
+    key: fs.readFileSync(__dirname + '/fake-pkey.pem'),
+    cert: fs.readFileSync(__dirname + '/fake-certificate.crt')
   }
 },
 function(rq) {

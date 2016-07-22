@@ -14,7 +14,7 @@ function contacts(user) {
 function onRegister(rq, flow) {
   var user = sip.parseUri(rq.headers.to.uri).user;
   if(rq.headers.contact === '*')
-    delete bindings[user];  
+    delete bindings[user];
   else {
     var record = bindings[user];
     if(!record) record = bindings[user] = {};
@@ -22,7 +22,7 @@ function onRegister(rq, flow) {
     rq.headers.contact.forEach(function(x) {
       var ob = !!(x.params['reg-id'] && x.params['+sip.instance']);
       var key = ob ? [x.params['+sip.instance'],x.params['reg-id']].join() : rq.headers['call-id'];
-    
+
       if(!record[key] || record[key].seq < rq.headers.cseq.seq) {
         var binding = {
           contact: x,
@@ -42,7 +42,7 @@ function onRegister(rq, flow) {
   }
 
   if(!rq.headers.to.params.tag) rq.headers.to.params.tag = crypto.randomBytes(8).toString('hex');
- 
+
   var c = contacts(user);
   if(c.length) {
     proxy.send(sip.makeResponse(rq, 200, 'OK', {headers: {
@@ -104,4 +104,3 @@ function(rq, flow) {
       forwardInDialogRequest(rq, flow);
   }
 });
-

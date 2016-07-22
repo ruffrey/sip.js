@@ -1,12 +1,13 @@
 // Simple proxy server with registrar function.
 
-var sip = require('sip');
-var proxy = require('sip/proxy');
-var util = require('sys');
+var sip = require('../sip');
+var proxy = require('../proxy');
+var util = require('util');
 
 var contacts = {};
 
 proxy.start({
+  port: 5070,
   logger: {
     recv: function(m) { util.debug('recv:' + util.inspect(m, null, null)); },
     send: function(m) { util.debug('send:' + util.inspect(m, null, null)); },
@@ -19,7 +20,7 @@ proxy.start({
     contacts[user] = rq.headers.contact;
     var rs = sip.makeResponse(rq, 200, 'Ok');
     rs.headers.to.tag = Math.floor(Math.random() * 1e6);
-    
+
     // Notice  _proxy.send_ not sip.send
     proxy.send(rs);
   }
@@ -28,9 +29,9 @@ proxy.start({
 
     if(contacts[user] && Array.isArray(contacts[user]) && contacts[user].length > 0) {
       rq.uri = contacts[user][0].uri;
-      
+
       proxy.send(sip.makeResponse(rq, 100, 'Trying'));
-      
+
       proxy.send(rq);
     }
     else {
@@ -38,4 +39,3 @@ proxy.start({
     }
   }
 });
-

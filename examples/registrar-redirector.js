@@ -1,13 +1,14 @@
 // Simple registrar - redirector
 //
 
-var sip = require('sip');
+var sip = require('../sip');
 var digest = sip.digest;
 var util = require('util');
 
 var registry = {};
 
 sip.start({
+  port: 5070,
   logger: {
     send: function(message, address) { debugger; util.debug("send\n" + util.inspect(message, false, null)); },
     recv: function(message, address) { debugger; util.debug("recv\n" + util.inspect(message, false, null)); }
