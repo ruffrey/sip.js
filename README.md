@@ -175,7 +175,7 @@ fields of root object and `headers.via` array. If deep is true it performs full 
 
 ## Digest Authentication
 
-sip.js implements digest authentication as described in RFC 2617. Module can be accessed by calling `require('sip/digest');`
+sip.js implements digest authentication as described in RFC 2617. Module can be accessed by calling `require('sip').digest;`
 
 ### Server-side API
 

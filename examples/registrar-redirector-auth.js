@@ -2,7 +2,7 @@
 //
 
 var sip = require('sip');
-var digest = require('sip/digest');
+var digest = sip.digest;
 var util = require('util');
 var os = require('os');
 
@@ -14,20 +14,20 @@ var registry = {
 var realm = os.hostname();
 
 sip.start({
-  logger: { 
+  logger: {
     send: function(message, address) { debugger; util.debug("send\n" + util.inspect(message, false, null)); },
     recv: function(message, address) { debugger; util.debug("recv\n" + util.inspect(message, false, null)); }
   }
 },
 function(rq) {
   try {
-    if(rq.method === 'REGISTER') {  
-      
+    if(rq.method === 'REGISTER') {
+
       //looking up user info
       var username = sip.parseUri(rq.headers.to.uri).user;
       var userinfo = registry[username];
 
-      if(!userinfo) { // we don't know this user and answer with a challenge to hide this fact 
+      if(!userinfo) { // we don't know this user and answer with a challenge to hide this fact
         var session = {realm: realm};
         sip.send(digest.challenge({realm: realm}, sip.makeResponse(rq, 401, 'Authentication Required')));
       }
@@ -47,7 +47,7 @@ function(rq) {
     else if(rq.method === 'INVITE') {
       var username = sip.parseUri(rq.uri).user;
       var userinfo = registry[username]
-      
+
       if(userinfo && Array.isArray(userinfo.contact) && userinfo.contact.length > 0) {
         var rs = sip.makeResponse(rq, 302, 'Moved');
         rs.headers.contact = userinfo.contact;
@@ -67,4 +67,3 @@ function(rq) {
     sip.send(sip.makeResponse(rq, 500, "Server Internal Error"));
   }
 });
-

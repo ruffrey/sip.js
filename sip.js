@@ -28,6 +28,7 @@ exports.stringifyUri = stringifyUri;
 exports.stringifyAuthHeader = stringifyAuthHeader;
 exports.stringify = stringify;
 exports.parseUri = parseUri;
+exports.digest = require('./lib/digest');
 
 const handleAck = require('./lib/handlers/handleAck');
 
