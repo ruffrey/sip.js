@@ -10,11 +10,13 @@ const messageHelpers = require('./lib/messageHelpers');
 const dnsResolver = require('./lib/dnsResolver');
 const flowTokens = require('./lib/flowTokens');
 const makeTransportWrapper = require('./lib/transports/makeTransportWrapper');
+const copyMessage = require('./lib/copyMessage');
 exports.makeTransport = makeTransportWrapper;
 exports.makeStreamParser = makeStreamParser;
 exports.generateBranch = generateBranch;
 exports.makeResponse = makeResponse;
 exports.parse = messageHelpers.parse;
+exports.copyMessage = copyMessage;
 
 const parsers = stringManipulation.parsers;
 const stringifyUri = stringManipulation.stringifyUri;
@@ -101,6 +103,7 @@ exports.create = function createSipServer(options, sipRequestHandler) {
     transport.open.bind(transport)
   );
   const hostname = options.publicAddress || options.address || options.hostname || os.hostname();
+  // TODO: FIXME: will not scale past a single process!
   const seedForSha1 = crypto.randomBytes(20);
 
   const sipServer = {
@@ -148,12 +151,12 @@ exports.create = function createSipServer(options, sipRequestHandler) {
           return;
         }
 
-        const trans = transactionService.createClientTransaction.bind(transactionService);
-        const transportConnectFunction = transport.open.bind(transport);
+        transactionService.createClientTransaction.bind(transactionService);
+        transport.open.bind(transport);
 
         sequentialSearch(
-          trans,
-          transportConnectFunction,
+          transactionService,
+          transport,
           addresses,
           m,
           sendCallback

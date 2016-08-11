@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "ES6"
+    },
+    "files": [
+        "src/app.js"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

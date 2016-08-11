@@ -69,12 +69,25 @@ test2 = (success) ->
   # FIXME: 'intmeth', 'unreason' - fails
   messages = ['wsinv', 'esc01', 'escnull', 'esc02', 'lwsdisp', 'longreq', 'dblreq', 'semiuri', 'transports', 'mpart01', 'noreason', 'intmeth', 'unreason']
 
+  # http://json-diff.com is helpful for debugging unexpected parse results
   messages.forEach (name) ->
-    # console.log "# processing '#{name}'" # XXX
+    console.log "# processing '#{name}'" # XXX
     m = fs.readFileSync "#{__dirname}/messages/#{ name }.dat", 'ascii'
     p = fs.readFileSync "#{__dirname}/messages/#{ name }.json", 'ascii'
+    parsedM = JSON.parse JSON.stringify sip.parse m;
+    parsedP = JSON.parse p
+    # console.log "\n\n#   Expected p= '#{p}'"
+    # console.log "\n#   Actual parsedM= '#{JSON.stringify(parsedM, null, 2)}'\n\n"
 
-    assert.deepEqual (JSON.parse JSON.stringify sip.parse m), (JSON.parse p)
+    # console.log "\n-- Expected content -- \n'#{JSON.parse(p).content}' \n--"
+    # console.log "\n-- Actual content -- \n'#{parsedM.content}' \n--\n"
+
+    # console.log JSON.stringify parsedP.content
+    # console.log '-----------------------------------'
+    # console.log JSON.stringify parsedM.content
+
+    assert.equal JSON.stringify(parsedP.content).length, JSON.stringify(parsedM.content).length
+    assert.deepEqual (parsedM), (JSON.parse p)
     
   success()
 

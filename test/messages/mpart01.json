@@ -17,8 +17,17 @@
     "max-forwards": "70",
     "route": [
       {
-        "uri": "sip:127.0.0.1:5080",
-        "params": {}
+        "uri": {
+          "schema": "sip",
+          "host": "127.0.0.1",
+          "port": 5080,
+          "params": {
+          },
+          "headers": {
+          }
+        },
+        "params": {
+        }
       }
     ],
     "identity": "r5mwreLuyDRYBi/0TiPwEsY3rEVsk/G2WxhgTV1PF7hHuLIK0YWVKZhKv9Mj8UeXqkMVbnVq37CD+813gvYjcBUaZngQmXc9WNZSDNGCzA+fWl9MEUHWIZo1CeJebdY/XlgKeTa0Olvq0rt70Q5jiSfbqMJmQFteeivUhkMWYUA=",
@@ -49,5 +58,5 @@
     "user-agent": "SIPimp.org/0.2.5 (curses)",
     "content-length": 553
   },
-  "content": "--7a9cbec02ceef655\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: binary"
+  "content": "--7a9cbec02ceef655\r\nContent-Type: text/plain\r\nContent-Transfer-Encoding: binary\r\n\r\nHello\r\n--7a9cbec02ceef655\r\nContent-Type: application/octet-stream\r\nContent-Transfer-Encoding: binary\r\n\r\n0\u0001R\u0006\t*H\r\n\u0001\u0007\u0002\u0001C0\u0001?\u0002\u0001\u00011\t0\u0007\u0006\u0005+\u000e\u0003\u0002\u001a0\u000b\u0006\t*H\r\n\u0001\u0007\u00011\u0001 0\u0001\u001c\u0002\u0001\u00010|0p1\u000b0\t\u0006\u0003U\u0004\u0006\u0013\u0002US1\u00130\u0011\u0006\u0003U\u0004\b\u0013\r\nCalifornia1\u00110\u000f\u0006\u0003U\u0004\u0007\u0013\bSan Jose1\u000e0\f\u0006\u0003U\u0004\r\n\u0013\u0005sipit1)0'\u0006\u0003U\u0004\u000b\u0013 Sipit Test Certificate Authority\u0002\b\u0001\u0000q\u00023\u0001\u00130\u0007\u0006\u0005+\u000e\u0003\u0002\u001a0\r\n\u0006\t*H\r\n\u0001\u0001\u0001\u0005\u0000\u0004fHR-e\u0017\u000e\u0015fYqb*5\r\nh<+\u0016udY=G(b At3\r\n\u0015[\u0013\fB\u0010.{rR\u001cI..\u0017/;\u0002~O'Tmd6*:>f]K\u0014\u0018-O{e\u0005\r\n--7a9cbec02ceef655--\r\n"
 }

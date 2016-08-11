@@ -26,6 +26,7 @@ test1 = (success) ->
     socket.send (new Buffer rs), 0, rs.length, rinfo.port, rinfo.address
 
   sip.send sip.copyMessage(message), (rs) -> 
+    console.log JSON.stringify(rs, null, 2)
     assert.equal 200, rs.status
     success()
 
@@ -35,10 +36,10 @@ test2 = (success) ->
     rs = sip.stringify sip.makeResponse parsed, 200
     socket.send (new Buffer rs), 0, rs.length, parsed.headers.via[0].port, rinfo.address
     
-  sip.send message,
-    (rs) -> 
-      assert.equal 200, rs.status
-      success()
+  sip.send message, (rs) -> 
+  
+    assert.equal 200, rs.status
+    success()
 
 test3 = (success) -> 
   sip.stop()

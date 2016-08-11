@@ -55,8 +55,20 @@
     "content-type": "application/sdp",
     "route": [
       {
-        "uri": "sip:services.example.com;lr;unknownwith=value;unknown-no-value",
-        "params": {}
+        "uri": {
+          "schema": "sip",
+          "host": "services.example.com",
+          "port": null,
+          "params": {
+            "lr": null,
+            "unknownwith": "value",
+            "unknown-no-value": null
+          },
+          "headers": {
+          }
+        },
+        "params": {
+        }
       }
     ],
     "contact": [

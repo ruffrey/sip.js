@@ -7,7 +7,8 @@
   "main": "sip.js",
   "license": "MIT",
   "scripts": {
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "legacy-tests": "cd test && ./runtests.coffee"
   },
   "directories": {
     "lib": "",

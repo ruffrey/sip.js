@@ -1,5 +1,5 @@
 sip = require '../sip'
-digest = require '../digest'
+digest = require '../lib/digest'
 assert = require 'assert'
 util = require 'util'
 
@@ -15,16 +15,16 @@ test1 = (success) ->
       method:'GET',
       nonce:nonce,
       nc:'00000001',
-      cnonce:cnonce, 
+      cnonce:cnonce,
       qop:'auth',
       uri:'/dir/index.html'
     }) == '6629fae49393a05397450978507c4ef1'
-  
+
   success()
 
 test2 = (success) ->
-  rq = 
-    method: 'OPTIONS' 
+  rq =
+    method: 'OPTIONS'
     uri: 'sip:carol@chicago.com'
     headers:
       via: {host: 'pc33.atlanta.com', params: {branch: 'z9hG4bKhjhs8ass877'}}
@@ -40,23 +40,23 @@ test2 = (success) ->
   rs = digest.challenge server, sip.makeResponse rq, 401, 'Authentication Required'
 
   assert.ok rs.headers['www-authenticate'], "www-authenticate header not present"
-  
+
   client = {}
-  rq = digest.signRequest client, rq, rs, {user:'carol', password: '1234'}
- 
+  digest.signRequest client, rq, rs, {user:'carol', password: '1234'}
+
   assert.ok digest.authenticateRequest server, rq, {user: 'carol', password: '1234'}
   assert.ok digest.authenticateResponse client, digest.signResponse server, sip.makeResponse rq, 200
 
-  rq = digest.signRequest client, rq
-  
+  digest.signRequest client, rq
+
   assert.ok digest.authenticateRequest server, rq
   assert.ok digest.authenticateResponse client, digest.signResponse server, sip.makeResponse rq, 200
 
   success()
 
 test3 = (success) ->
-  rq = 
-    method: 'OPTIONS' 
+  rq =
+    method: 'OPTIONS'
     uri: 'sip:carol@chicago.com'
     headers:
       via: {host: 'pc33.atlanta.com', params: {branch: 'z9hG4bKhjhs8ass877'}}
@@ -72,22 +72,25 @@ test3 = (success) ->
   rs = digest.challenge server, sip.makeResponse rq, 407, 'Proxy Authentication Required'
 
   assert.ok rs.headers['proxy-authenticate'], "proxy-authenticate header not present"
-  
+
   client = {}
-  rq = digest.signRequest client, rq, rs, {user:'carol', password: '1234'}
- 
+  digest.signRequest client, rq, rs, {user:'carol', password: '1234'}
+
   assert.ok digest.authenticateRequest server, rq, {user: 'carol', password: '1234'}
 
-  rq = digest.signRequest client, rq
-  
+  digest.signRequest client, rq
+
   assert.ok digest.authenticateRequest server, rq
 
   success()
 
 test4 = (success) ->
-  assert.ok (new Date() - digest.extractNonceTimestamp(digest.generateNonce('1234'), '1234')) < 1000, 'timestamped nonce fail'
-  success() 
+  now = new Date()
+  nonceFor1234 = digest.generateNonce('1234')
+  nonceTimestamp = digest.extractNonceTimestamp(nonceFor1234, '1234')
+  assert.ok (now - nonceTimestamp) < 1000, 'timestamped nonce fail'
+  success()
 
 exports.tests = [test1, test2, test3, test4]
- 
- 
+
+
